@@ -8,5 +8,19 @@
             },
             "enableLiveMetricsFilters": true
         }
+    },
+    "extensions": {
+        "mcp": {
+            "instructions": "You can manage tasks for the user. You can create, read, update, and delete tasks as needed to assist the user. When creating or updating tasks, ensure that the content is relevant and useful for the user's needs. Always confirm with the user before deleting any tasks to prevent accidental data loss.",
+            "serverName": "Todo MCP Server",
+            "serverVersion": "1.0.0",
+            "encryptClientState": true,
+            "messageOptions": {
+                "useAbsoluteUriForEndpoint": false
+            },
+            "system": {
+                "webhookAuthorizationLevel": "Anonymous"
+            }
+        }    
     }
 }
