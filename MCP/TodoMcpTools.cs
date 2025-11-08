@@ -41,7 +41,7 @@ public class TodoMcpTools
     [Function("McpGetTodoById")]
     public async Task<object> GetTodoById(
         [McpToolTrigger(GetTodoByIdToolName, GetTodoByIdToolDescription)] ToolInvocationContext context,
-        [McpToolProperty(IdPropertyName, NumberPropertyType, IdPropertyDescription)] int id
+        [McpToolProperty(IdPropertyName, IdPropertyDescription, true)] int id
     )
     {
         _logger.LogInformation("Getting todo by ID via MCP: {Id}", id);
@@ -64,8 +64,8 @@ public class TodoMcpTools
     [Function("McpSaveTodo")]
     public async Task<object> SaveTodo(
         [McpToolTrigger(SaveTodoToolName, SaveTodoToolDescription)] ToolInvocationContext context,
-        [McpToolProperty(TitlePropertyName, TextPropertyType, TitlePropertyDescription)] string title,
-        [McpToolProperty(DescriptionPropertyName, TextPropertyType, DescriptionPropertyDescription)] string description = ""
+        [McpToolProperty(TitlePropertyName, TitlePropertyDescription, true)] string title,
+        [McpToolProperty(DescriptionPropertyName, DescriptionPropertyDescription)] string description = ""
     )
     {
         _logger.LogInformation("Creating new todo via MCP: {Title}", title);
@@ -91,10 +91,10 @@ public class TodoMcpTools
     [Function("McpUpdateTodo")]
     public async Task<object> UpdateTodo(
         [McpToolTrigger(UpdateTodoToolName, UpdateTodoToolDescription)] ToolInvocationContext context,
-        [McpToolProperty(IdPropertyName, NumberPropertyType, IdPropertyDescription)] int id,
-        [McpToolProperty(TitlePropertyName, TextPropertyType, TitlePropertyDescription)] string title,
-        [McpToolProperty(DescriptionPropertyName, TextPropertyType, DescriptionPropertyDescription)] string description = "",
-        [McpToolProperty(CompletedPropertyName, BooleanPropertyType, CompletedPropertyDescription)] bool completed = false
+        [McpToolProperty(IdPropertyName, IdPropertyDescription, true)] int id,
+        [McpToolProperty(TitlePropertyName, TitlePropertyDescription, true)] string title,
+        [McpToolProperty(DescriptionPropertyName, DescriptionPropertyDescription)] string description = "",
+        [McpToolProperty(CompletedPropertyName, CompletedPropertyDescription)] bool completed = false
     )
     {
         _logger.LogInformation("Updating todo via MCP: {Id}", id);
@@ -120,7 +120,7 @@ public class TodoMcpTools
     [Function("McpDeleteTodo")]
     public async Task<object> DeleteTodo(
         [McpToolTrigger(DeleteTodoToolName, DeleteTodoToolDescription)] ToolInvocationContext context,
-        [McpToolProperty(IdPropertyName, NumberPropertyType, IdPropertyDescription)] int id
+        [McpToolProperty(IdPropertyName, IdPropertyDescription, true)] int id
     )
     {
         _logger.LogInformation("Deleting todo via MCP: {Id}", id);

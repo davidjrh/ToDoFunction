@@ -10,8 +10,6 @@ var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
 
-builder.EnableMcpToolMetadata();
-
 // Configure Entity Framework
 builder.Services.AddDbContext<TodoContext>(options =>
     options.UseInMemoryDatabase("TodoDb"));
