@@ -1,6 +1,11 @@
 # TODO API - Azure Functions
 
-A simple CRUD API for managing TODO items built with Azure Functions and .NET 8.
+A simple CRUD API for managing TODO items built with Azure Functions and .NET 8, featuring **Model Context Protocol (MCP) Server** capabilities for AI-powered integrations.
+
+Authors: 
+- [@PabloSR06](https://github.com/PabloSR06)
+- [@davidjrh](https://github.com/davidjrh)
+
 
 ## Features
 
@@ -9,6 +14,7 @@ A simple CRUD API for managing TODO items built with Azure Functions and .NET 8.
 - In-memory database (EntityFramework Core)
 - RESTful API design
 - Comprehensive error handling
+- **MCP Server integration** - Expose TODO operations as AI-accessible tools using the [Microsoft.Azure.Functions.Worker.Extensions.Mcp](https://www.nuget.org/packages/Microsoft.Azure.Functions.Worker.Extensions.Mcp) NuGet package
 
 ## API Endpoints
 
@@ -124,11 +130,138 @@ ToDoFunction/
 │   └── TodoItem.cs          # TODO item data model
 ├── Data/
 │   └── TodoContext.cs       # Entity Framework DbContext
-├── Startup.cs               # Dependency injection configuration
-├── ToDoFunction.csproj      # Project file
+├── Services/
+│   ├── ITodoService.cs      # Todo service interface
+│   └── TodoService.cs       # Todo service implementation
+├── MCP/
+│   ├── TodoMcpTools.cs      # MCP Server tool implementations
+│   └── TodoToolsInformation.cs  # MCP tool metadata and descriptions
+├── Program.cs               # Application startup and DI configuration
+├── ToDoFunction.csproj      # Project file with MCP extension
 ├── host.json               # Azure Functions configuration
-└── local.settings.json     # Local development settings
+├── local.settings.json     # Local development settings
+└── mcp.json                # MCP Server configuration
 ```
+
+## MCP Server Integration
+
+This Azure Functions app doubles as a **Model Context Protocol (MCP) Server**, allowing AI assistants and agents to interact with the TODO list through standardized tool interfaces.
+
+### What is MCP?
+
+The Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to Large Language Models (LLMs). By implementing MCP, this TODO API can be seamlessly integrated into AI workflows, enabling AI assistants to manage tasks on your behalf.
+
+### MCP Tools Available
+
+The following MCP tools are exposed by this server:
+
+| Tool Name | Description | Parameters |
+|-----------|-------------|------------|
+| `create_task` | Create a new task in your personal todo list | `task_title` (required), `task_description` (optional) |
+| `list_all_tasks` | View all tasks with their details | None |
+| `find_task_by_id` | Look up a specific task by its unique ID | `task_id` (required) |
+| `modify_existing_task` | Update task details or completion status | `task_id` (required), `task_title` (required), `task_description` (optional), `is_completed` (optional) |
+| `remove_task` | Permanently delete a task | `task_id` (required) |
+
+### Configuration
+
+The MCP Server is configured via the `mcp.json` file, which defines both local and remote server endpoints:
+
+```json
+{
+    "inputs": [
+        {
+            "type": "promptString",
+            "id": "functions-mcp-extension-system-key",
+            "description": "Azure Functions MCP Extension System Key",
+            "password": true
+        },
+        {
+            "type": "promptString",
+            "id": "functionapp-name",
+            "description": "Azure Functions App Name"
+        }
+    ],
+    "servers": {
+        "local-mcp-todo-function": {
+            "type": "http",
+            "url": "http://0.0.0.0:7071/runtime/webhooks/mcp"
+        },
+        "remote-mcp-todo-function": {
+            "type": "http",
+            "url": "https://${input:functionapp-name}.azurewebsites.net/runtime/webhooks/mcp",
+            "headers": {
+                "x-functions-key": "${input:functions-mcp-extension-system-key}"
+            }
+        }
+    }
+}
+```
+
+### Using the MCP Server
+
+#### Local Development
+
+When running locally with `func start`, the MCP Server is available at:
+```
+http://localhost:7071/runtime/webhooks/mcp
+```
+
+#### Production (Azure)
+
+When deployed to Azure, the MCP Server endpoint is:
+```
+https://<your-function-app>.azurewebsites.net/runtime/webhooks/mcp
+```
+
+**Note:** You'll need to provide the system key via the `x-functions-key` header for authentication.
+
+#### Connecting with MCP Clients
+
+To connect an MCP-compatible client (like Claude Desktop, VS Code with MCP extension, or custom MCP clients):
+
+1. Configure the client to use the MCP server URL
+2. For local testing, use: `http://localhost:7071/runtime/webhooks/mcp`
+3. For production, use the Azure Functions URL with the system key
+
+#### Example MCP Tool Usage
+
+Once connected, AI assistants can interact with your TODO list using natural language:
+
+- "Create a task to buy groceries"
+- "Show me all my tasks"
+- "Mark task 3 as completed"
+- "Delete the task about the meeting"
+
+### Implementation Details
+
+The MCP integration uses the **Microsoft.Azure.Functions.Worker.Extensions.Mcp** NuGet package, which provides:
+
+- `[McpToolTrigger]` - Attribute to expose Azure Functions as MCP tools
+- `[McpToolProperty]` - Attribute to define tool parameters with descriptions
+- `ToolInvocationContext` - Context object for MCP tool invocations
+
+Example implementation:
+
+```csharp
+[Function("McpSaveTodo")]
+public async Task<object> SaveTodo(
+    [McpToolTrigger(SaveTodoToolName, SaveTodoToolDescription)] ToolInvocationContext context,
+    [McpToolProperty(TitlePropertyName, TitlePropertyDescription, true)] string title,
+    [McpToolProperty(DescriptionPropertyName, DescriptionPropertyDescription)] string description = ""
+)
+{
+    // Implementation
+}
+```
+
+### Benefits of MCP Integration
+
+- **AI-Powered Task Management**: Let AI assistants manage your tasks through natural conversation
+- **Standardized Interface**: Works with any MCP-compatible client
+- **Secure**: Uses Azure Functions authentication for remote access
+- **Extensible**: Easy to add new tools and capabilities
+- **Developer-Friendly**: Simple attribute-based programming model
 
 ## Notes
 
@@ -136,3 +269,12 @@ ToDoFunction/
 - For production use, consider using a persistent database like SQL Server, CosmosDB, or PostgreSQL
 - The API uses function-level authorization by default
 - All timestamps are in UTC format
+- The MCP Server endpoint is automatically secured with Azure Functions system keys in production
+- MCP tools provide a standardized way for AI assistants to interact with your TODO list
+
+## Resources
+
+- [Model Context Protocol (MCP) Documentation](https://modelcontextprotocol.io/)
+- [Microsoft.Azure.Functions.Worker.Extensions.Mcp NuGet Package](https://www.nuget.org/packages/Microsoft.Azure.Functions.Worker.Extensions.Mcp)
+- [Azure Functions Documentation](https://docs.microsoft.com/azure/azure-functions/)
+- [.NET 8 Documentation](https://docs.microsoft.com/dotnet/)
