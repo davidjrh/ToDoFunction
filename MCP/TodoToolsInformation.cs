@@ -27,9 +27,6 @@ internal sealed class TodoToolsInformation
     public const string IdPropertyDescription = "The unique identifier number assigned to this specific task.";
     public const string CompletedPropertyDescription = "Set to true when the task is finished, false when it's still pending or in progress.";
 
-    public const string TextPropertyType = "string";
-    public const string BooleanPropertyType = "boolean";
-    public const string NumberPropertyType = "number";
 }
     
    
