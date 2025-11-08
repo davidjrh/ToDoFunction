@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"TODOS ": {
+			"url": "http://localhost:7071/runtime/webhooks/mcp",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}
